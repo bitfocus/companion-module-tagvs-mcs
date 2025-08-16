@@ -16,7 +16,8 @@
 		"url": "git+https://github.com/josephdadams/companion-module-tagvs-mcs.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.11.2"
+		"@companion-module/base": "~1.11.2",
+		"undici": "^7.13.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.1.1",

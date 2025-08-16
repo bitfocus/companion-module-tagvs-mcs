@@ -2,7 +2,7 @@
 	"id": "tagvs-mcs",
 	"name": "tagvs-mcs",
 	"shortname": "tagvs-mcs",
-	"description": "Controls TAG MCS layouts and audio channels via API v5.",
+	"description": "Controls TAG Video Systems' Media Control System",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/josephdadams/companion-module-tagvs-mcs.git",
