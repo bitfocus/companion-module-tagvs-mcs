@@ -34,6 +34,18 @@ This module integrates with the TAG Video Systems MCS API (v5), allowing you to 
 - **Select Layout**
   Select a Layout to be used on other actions.
 
+- **Select Video Channel**
+  Select a Video Channel to be used on other actions.
+
+- **Select Audio Channel**
+  Select a Audio Channel to be used on other actions.
+
+- **Select Tile Number**
+  Select a Tile Number to be used on other actions.
+
+- **Modify Layout**
+  Modify a layout by changing the Video Channel assigned to a Tile Number.
+
 - **Apply Layout to Output**  
   Assign a layout to an output. These can either be chosen from a list or using the pre-selected Output or Layout.
 

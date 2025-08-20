@@ -224,6 +224,9 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		instance.layouts = Array.isArray(layouts) ? layouts : layouts?.data || []
 		instance.channels = Array.isArray(channels) ? channels : channels?.data || []
 
+		console.log('Outputs:', JSON.stringify(instance.outputs[0].processing.muxing))
+		//console.log('Channels:', instance.channels)
+
 		//compare these choices to existing ones, and only rebuild if changed
 		const outputChoices = BuildOutputChoices(instance)
 		const layoutChoices = BuildLayoutChoices(instance)
@@ -318,13 +321,52 @@ export function StopPolling(instance: TAGMCSInstance): void {
 	}
 }
 
+export async function modifyLayout(instance: TAGMCSInstance, layoutUuid: string, tileNumber: Number, videoChannelUuid: string): Promise<void> {
+	if (instance.config.verbose) {
+		instance.log('debug', `modifyLayout called with layoutUuid=${layoutUuid}, tileNumber=${tileNumber}, videoChannelUuid=${videoChannelUuid}`)
+	}
+
+	let layout = instance.layouts.find((l) => l.uuid === layoutUuid)
+	if (!layout) {
+		instance.log('error', `Cannot modify layout: layout ${layoutUuid} not found`)
+		return
+	}
+
+	//get the layout label
+	const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
+
+	//get the channel label
+	const channelLabel = instance.channelChoices.find((c) => c.id === videoChannelUuid)?.label || ''
+
+	const next = JSON.parse(JSON.stringify(layout))
+	next.tiles = next.tiles || []
+	//find the tile object by doing a find in next.tiles for tile.index == tileNumber
+	
+	const tile = next.tiles.find((t: any) => t.index === tileNumber)
+	if (!tile) {
+		instance.log('error', `Cannot modify layout: tile number ${tileNumber} not found in layout ${layoutUuid}`)
+		return
+	}
+
+	tile.channel = videoChannelUuid
+	if (instance.config.verbose) {
+		instance.log('debug', `Modifying layout "${layoutLabel}" tile ${tileNumber} to video channel "${channelLabel}"`)
+	}
+
+	//make sure local data store is updated first before sending to API
+	layout = next	
+
+	// Update the layout in the API
+	await fetchJson(instance as any, `layouts/config/${layoutUuid}`, 'PUT', next)
+}
+
 export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, layoutUuid: string): Promise<void> {
 	if (instance.config.verbose) {
 		instance.log('debug', `applyLayout called with outputUuid=${outputUuid}, layoutUuid=${layoutUuid}`)
 	}
 
 	// Use the cached full object (from getState)
-	const current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
+	let current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
 	if (!current) {
 		instance.log('error', `Cannot Apply Layout: output ${outputUuid} not found`)
 		return
@@ -338,5 +380,48 @@ export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, 
 	const next = JSON.parse(JSON.stringify(current))
 	next.input = next.input || {}
 	next.input.layouts = [layoutUuid]
+
+	//make sure local data store is updated first before sending to API
+	current = next
+
+	// Update the output's layout in the API
+	await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
+}
+
+export async function setAudioChannel(
+	instance: TAGMCSInstance,
+	outputUuid: string,
+	channelUuid: string,
+	audioIndex: number = 1,
+): Promise<void> {
+	if (instance.config.verbose) {
+		instance.log(
+			'debug',
+			`setAudioChannel called with outputUuid=${outputUuid}, channelUuid=${channelUuid}, audioIndex=${audioIndex}`,
+		)
+	}
+
+	// Use the cached full object (from getState)
+	const current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
+	if (!current) {
+		instance.log('error', `Cannot Set Audio Channel: output ${outputUuid} not found`)
+		return
+	}
+
+	const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
+	const channelLabel = instance.channelChoices.find((c) => c.id === channelUuid)?.label || ''
+	instance.log('info', `Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`)
+
+	// Deep clone to avoid mutating cache
+	const next = JSON.parse(JSON.stringify(current))
+	next.input = next.input || {}
+	next.input.audio = next.input.audio || []
+
+	// Ensure array is large enough
+	while (next.input.audio.length < audioIndex) {
+		next.input.audio.push({ channel: null })
+	}
+
+	next.input.audio[audioIndex - 1].channel = channelUuid
 	await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
 }
