@@ -51,8 +51,8 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 		if (layout) {
 			vars[`output_${output.uuid}_layout_label`] = layout.label
 		} else {
-            vars[`output_${output.uuid}_layout_label`] = ''
-        }
+			vars[`output_${output.uuid}_layout_label`] = ''
+		}
 	}
 
 	instance.setVariableValues(vars)

@@ -234,7 +234,8 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 
 		applyLayout: {
 			name: 'Apply Layout to Output',
-			description: 'Assign a layout to an output. These can either be chosen from a list or using the pre-selected Output or Layout.',
+			description:
+				'Assign a layout to an output. These can either be chosen from a list or using the pre-selected Output or Layout.',
 			options: [
 				{
 					type: 'checkbox',
@@ -275,7 +276,8 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 
 		changeAudioChannel: {
 			name: 'Change Audio Channel for Output',
-			description: 'Change the Audio Channel for an Output. This can either be chosen from a list or using the pre-selected Output and Audio Channel.',
+			description:
+				'Change the Audio Channel for an Output. This can either be chosen from a list or using the pre-selected Output and Audio Channel.',
 			options: [
 				{
 					type: 'checkbox',
@@ -316,9 +318,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 				},
 			],
 			callback: async (evt) => {
-				const outputUuid = evt.options.useSelectedOutput
-					? instance.selectedOutput
-					: String(evt.options.output || '')
+				const outputUuid = evt.options.useSelectedOutput ? instance.selectedOutput : String(evt.options.output || '')
 
 				const channelUuid = evt.options.useSelectedAudioChannel
 					? instance.selectedAudioChannel

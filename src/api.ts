@@ -321,14 +321,22 @@ export function StopPolling(instance: TAGMCSInstance): void {
 	}
 }
 
-export async function modifyLayout(instance: TAGMCSInstance, layoutUuid: string, tileNumber: Number, videoChannelUuid: string): Promise<void> {
+export async function modifyLayout(
+	instance: TAGMCSInstance,
+	layoutUuid: string,
+	tileNumber: Number,
+	videoChannelUuid: string,
+): Promise<void> {
 	if (instance.config.verbose) {
-		instance.log('debug', `modifyLayout called with layoutUuid=${layoutUuid}, tileNumber=${tileNumber}, videoChannelUuid=${videoChannelUuid}`)
+		instance.log(
+			'debug',
+			`modifyLayout called with layoutUuid=${layoutUuid}, tileNumber=${tileNumber}, videoChannelUuid=${videoChannelUuid}`,
+		)
 	}
 
 	let layout = instance.layouts.find((l) => l.uuid === layoutUuid)
 	if (!layout) {
-		instance.log('error', `Cannot modify layout: layout ${layoutUuid} not found`)
+		instance.log('error', `Cannot Modify Layout: Layout ${layoutUuid} not found`)
 		return
 	}
 
@@ -341,10 +349,10 @@ export async function modifyLayout(instance: TAGMCSInstance, layoutUuid: string,
 	const next = JSON.parse(JSON.stringify(layout))
 	next.tiles = next.tiles || []
 	//find the tile object by doing a find in next.tiles for tile.index == tileNumber
-	
+
 	const tile = next.tiles.find((t: any) => t.index === tileNumber)
 	if (!tile) {
-		instance.log('error', `Cannot modify layout: tile number ${tileNumber} not found in layout ${layoutUuid}`)
+		instance.log('error', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
 		return
 	}
 
@@ -354,7 +362,7 @@ export async function modifyLayout(instance: TAGMCSInstance, layoutUuid: string,
 	}
 
 	//make sure local data store is updated first before sending to API
-	layout = next	
+	layout = next
 
 	// Update the layout in the API
 	await fetchJson(instance as any, `layouts/config/${layoutUuid}`, 'PUT', next)
@@ -402,7 +410,7 @@ export async function setAudioChannel(
 	}
 
 	// Use the cached full object (from getState)
-	const current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
+	let current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
 	if (!current) {
 		instance.log('error', `Cannot Set Audio Channel: output ${outputUuid} not found`)
 		return
@@ -417,11 +425,19 @@ export async function setAudioChannel(
 	next.input = next.input || {}
 	next.input.audio = next.input.audio || []
 
-	// Ensure array is large enough
-	while (next.input.audio.length < audioIndex) {
-		next.input.audio.push({ channel: null })
+	//find entry where next.input.audio.index == 1, or create it if not found
+	let audioEntry = next.input.audio.find((a: any) => a.index === 1)
+	if (!audioEntry) {
+		audioEntry = { index: 1, channel: '', pid: null }
+		next.input.audio.push(audioEntry)
 	}
 
-	next.input.audio[audioIndex - 1].channel = channelUuid
+	audioEntry.channel = channelUuid
+	audioEntry.audio_index = audioIndex
+
+	//make sure local data store is updated first before sending to API
+	current = next
+
+	// Update the output's audio channel in the API
 	await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
 }

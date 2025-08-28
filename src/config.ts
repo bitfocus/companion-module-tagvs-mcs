@@ -31,6 +31,13 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			required: true,
 		},
 		{
+			type: 'static-text',
+			id: 'hr1',
+			width: 12,
+			label: '',
+			value: '<hr />',
+		},
+		{
 			type: 'textinput',
 			id: 'username',
 			label: 'Username',
@@ -45,6 +52,13 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			width: 6,
 			default: '',
 			required: true,
+		},
+		{
+			type: 'static-text',
+			id: 'hr2',
+			width: 12,
+			label: '',
+			value: '<hr />',
 		},
 		{
 			type: 'checkbox',

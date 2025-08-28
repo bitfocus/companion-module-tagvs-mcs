@@ -29,8 +29,6 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	selectedVideoChannel: string = ''
 	selectedAudioChannel: string = ''
 
-
-
 	constructor(internal: unknown) {
 		super(internal)
 	}
