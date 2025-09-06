@@ -8,6 +8,64 @@ type Tokens = {
 	exp: number // unix seconds
 }
 
+export const DEFAULT_MIN_COMMAND_GAP_MS = 500 // min time between commands
+export const DEFAULT_POST_WRITE_SETTLE_MS = 200 // time to wait after a write
+
+function sleep(ms: number) {
+	return new Promise<void>((resolve) => setTimeout(resolve, ms))
+}
+
+type CommandFn<T = any> = () => Promise<T>
+
+export async function scheduleCommand<T = any>(
+	instance: any,
+	fn: CommandFn<T>,
+	opts?: { minGapMs?: number; settleMs?: number; tag?: string },
+): Promise<T> {
+	const minGap = opts?.minGapMs ?? DEFAULT_MIN_COMMAND_GAP_MS
+	const settle = opts?.settleMs ?? DEFAULT_POST_WRITE_SETTLE_MS
+
+	// Create a chain promise to ensure FIFO execution
+	if (!instance._commandChain) {
+		instance._commandChain = Promise.resolve()
+	}
+	if (!instance._lastCommandAt) {
+		instance._lastCommandAt = 0
+	}
+
+	// Chain the work
+	const task = (async () => {
+		const now = Date.now()
+		const since = now - instance._lastCommandAt
+		const waitMs = since >= minGap ? 0 : minGap - since
+
+		if (waitMs > 0 && instance.config?.verbose) {
+			instance.log('debug', `Command gate: waiting ${waitMs}ms (${opts?.tag ?? 'cmd'})`)
+		}
+
+		if (waitMs > 0) await sleep(waitMs)
+
+		// Run the actual command
+		const result = await fn()
+
+		// Stamp last command time and apply settle delay after successful write(s)
+		instance._lastCommandAt = Date.now()
+		if (settle > 0) {
+			if (instance.config?.verbose) {
+				instance.log('debug', `Command settle: waiting ${settle}ms (${opts?.tag ?? 'cmd'})`)
+			}
+			await sleep(settle)
+		}
+
+		return result
+	})()
+
+	// Serialize: append to the chain, but return the real task result
+	const chained = instance._commandChain.then(() => task)
+	instance._commandChain = chained.catch(() => {}) // keep chain alive even on failure
+	return chained
+}
+
 function nowSeconds() {
 	return Math.floor(Date.now() / 1000)
 }
@@ -224,9 +282,6 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		instance.layouts = Array.isArray(layouts) ? layouts : layouts?.data || []
 		instance.channels = Array.isArray(channels) ? channels : channels?.data || []
 
-		console.log('Outputs:', JSON.stringify(instance.outputs[0].processing.muxing))
-		//console.log('Channels:', instance.channels)
-
 		//compare these choices to existing ones, and only rebuild if changed
 		const outputChoices = BuildOutputChoices(instance)
 		const layoutChoices = BuildLayoutChoices(instance)
@@ -334,38 +389,42 @@ export async function modifyLayout(
 		)
 	}
 
-	let layout = instance.layouts.find((l) => l.uuid === layoutUuid)
-	if (!layout) {
-		instance.log('error', `Cannot Modify Layout: Layout ${layoutUuid} not found`)
-		return
-	}
+	await scheduleCommand(
+		instance,
+		async () => {
+			// Fetch the current layout configuration
+			let layout = await getLayout(instance, layoutUuid)
 
-	//get the layout label
-	const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
+			if (!layout) {
+				instance.log('error', `Cannot Modify Layout: Layout ${layoutUuid} not found`)
+				return
+			}
 
-	//get the channel label
-	const channelLabel = instance.channelChoices.find((c) => c.id === videoChannelUuid)?.label || ''
+			//get the layout label
+			const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
 
-	const next = JSON.parse(JSON.stringify(layout))
-	next.tiles = next.tiles || []
-	//find the tile object by doing a find in next.tiles for tile.index == tileNumber
+			//get the channel label
+			const channelLabel = instance.channelChoices.find((c) => c.id === videoChannelUuid)?.label || ''
 
-	const tile = next.tiles.find((t: any) => t.index === tileNumber)
-	if (!tile) {
-		instance.log('error', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
-		return
-	}
+			const next = JSON.parse(JSON.stringify(layout))
+			next.tiles = next.tiles || []
+			//find the tile object by doing a find in next.tiles for tile.index == tileNumber
+			const tile = next.tiles.find((t: any) => t.index === tileNumber)
+			if (!tile) {
+				instance.log('error', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
+				return
+			}
 
-	tile.channel = videoChannelUuid
-	if (instance.config.verbose) {
-		instance.log('debug', `Modifying layout "${layoutLabel}" tile ${tileNumber} to video channel "${channelLabel}"`)
-	}
+			tile.channel = videoChannelUuid
+			if (instance.config.verbose) {
+				instance.log('debug', `Modifying layout "${layoutLabel}" tile ${tileNumber} to video channel "${channelLabel}"`)
+			}
 
-	//make sure local data store is updated first before sending to API
-	layout = next
-
-	// Update the layout in the API
-	await fetchJson(instance as any, `layouts/config/${layoutUuid}`, 'PUT', next)
+			// Update the layout in the API
+			await fetchJson(instance as any, `layouts/config/${layoutUuid}`, 'PUT', next)
+		},
+		{ tag: 'modifyLayout' },
+	)
 }
 
 export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, layoutUuid: string): Promise<void> {
@@ -373,27 +432,30 @@ export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, 
 		instance.log('debug', `applyLayout called with outputUuid=${outputUuid}, layoutUuid=${layoutUuid}`)
 	}
 
-	// Use the cached full object (from getState)
-	let current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
-	if (!current) {
-		instance.log('error', `Cannot Apply Layout: output ${outputUuid} not found`)
-		return
-	}
+	await scheduleCommand(
+		instance,
+		async () => {
+			let current = await getOutput(instance, outputUuid)
 
-	const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
-	const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
-	instance.log('info', `Applying layout "${layoutLabel}" to output "${outputLabel}"`)
+			if (!current) {
+				instance.log('error', `Cannot Apply Layout: output ${outputUuid} not found`)
+				return
+			}
 
-	// Deep clone to avoid mutating cache
-	const next = JSON.parse(JSON.stringify(current))
-	next.input = next.input || {}
-	next.input.layouts = [layoutUuid]
+			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
+			const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
+			instance.log('info', `Applying layout "${layoutLabel}" to output "${outputLabel}"`)
 
-	//make sure local data store is updated first before sending to API
-	current = next
+			// Deep clone to avoid mutating cache
+			const next = JSON.parse(JSON.stringify(current.data))
+			next.input = next.input || {}
+			next.input.layouts = [layoutUuid]
 
-	// Update the output's layout in the API
-	await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
+			// Update the output's layout in the API
+			await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
+		},
+		{ tag: 'applyLayout' },
+	)
 }
 
 export async function setAudioChannel(
@@ -409,35 +471,50 @@ export async function setAudioChannel(
 		)
 	}
 
-	// Use the cached full object (from getState)
-	let current = instance.outputs?.find((o: any) => o.uuid === outputUuid)
-	if (!current) {
-		instance.log('error', `Cannot Set Audio Channel: output ${outputUuid} not found`)
-		return
-	}
+	await scheduleCommand(
+		instance,
+		async () => {
+			// Fetch the current output configuration
+			let current = await getOutput(instance, outputUuid)
 
-	const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
-	const channelLabel = instance.channelChoices.find((c) => c.id === channelUuid)?.label || ''
-	instance.log('info', `Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`)
+			if (!current) {
+				instance.log('error', `Cannot Set Audio Channel: output ${outputUuid} not found`)
+				return
+			}
 
-	// Deep clone to avoid mutating cache
-	const next = JSON.parse(JSON.stringify(current))
-	next.input = next.input || {}
-	next.input.audio = next.input.audio || []
+			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
+			const channelLabel = instance.channelChoices.find((c) => c.id === channelUuid)?.label || ''
+			instance.log(
+				'info',
+				`Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`,
+			)
 
-	//find entry where next.input.audio.index == 1, or create it if not found
-	let audioEntry = next.input.audio.find((a: any) => a.index === 1)
-	if (!audioEntry) {
-		audioEntry = { index: 1, channel: '', pid: null }
-		next.input.audio.push(audioEntry)
-	}
+			// Deep clone to avoid mutating cache
+			const next = JSON.parse(JSON.stringify(current.data))
+			next.input = next.input || {}
+			next.input.audio = next.input.audio || []
 
-	audioEntry.channel = channelUuid
-	audioEntry.audio_index = audioIndex
+			//find entry where next.input.audio.index == 1, or create it if not found
+			let audioEntry = next.input.audio.find((a: any) => a.index === 1)
+			if (!audioEntry) {
+				audioEntry = { index: 1, channel: '', pid: null }
+				next.input.audio.push(audioEntry)
+			}
 
-	//make sure local data store is updated first before sending to API
-	current = next
+			audioEntry.channel = channelUuid
+			audioEntry.audio_index = audioIndex
 
-	// Update the output's audio channel in the API
-	await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
+			// Update the output's audio channel in the API
+			await fetchJson(instance as any, `outputs/config/${outputUuid}`, 'PUT', next)
+		},
+		{ tag: 'setAudioChannel' },
+	)
+}
+
+async function getOutput(instance: TAGMCSInstance, uuid: string): Promise<any> {
+	return fetchJson(instance, `outputs/config/${uuid}`, 'GET')
+}
+
+async function getLayout(instance: TAGMCSInstance, uuid: string): Promise<any> {
+	return fetchJson(instance, `layouts/config/${uuid}`, 'GET')
 }
