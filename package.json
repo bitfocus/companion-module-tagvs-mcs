@@ -16,11 +16,11 @@
 		"url": "git+https://github.com/josephdadams/companion-module-tagvs-mcs.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.11.2",
+		"@companion-module/base": "^1.13.1",
 		"undici": "^7.13.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.1.1",
+		"@companion-module/tools": "^2.4.0",
 		"@types/node": "^22.10.2",
 		"prettier": "^3.4.2",
 		"rimraf": "^6.0.1",
