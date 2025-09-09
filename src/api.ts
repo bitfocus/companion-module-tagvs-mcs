@@ -71,12 +71,7 @@ export async function modifyLayout(
 
 			tile.channel = videoChannelUuid
 
-			if (instance.config.verbose) {
-				instance.log(
-					'debug',
-					`Modifying layout "${layoutLabel}" tile ${tileNumber} to video channel "${channelLabel}"`,
-				)
-			}
+			instance.log('info', `Modifying layout "${layoutLabel}" tile ${tileNumber} to video channel "${channelLabel}"`)
 
 			// Update the layout in the API
 			await fetchJson(instance as TAGMCSInstance, true, `layouts/config/${layoutUuid}`, 'PUT', next)
@@ -108,12 +103,13 @@ export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, 
 
 			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
 			const layoutLabel = instance.layoutChoices.find((l) => l.id === layoutUuid)?.label || ''
-			instance.log('info', `Applying layout "${layoutLabel}" to output "${outputLabel}"`)
 
 			// Deep clone to avoid mutating cache
 			const next = JSON.parse(JSON.stringify(current.data))
 			next.input = next.input || {}
 			next.input.layouts = [layoutUuid]
+
+			instance.log('info', `Applying layout "${layoutLabel}" to output "${outputLabel}"`)
 
 			// Update the output's layout in the API
 			await fetchJson(instance as TAGMCSInstance, true, `outputs/config/${outputUuid}`, 'PUT', next)
@@ -154,10 +150,6 @@ export async function setAudioChannel(
 
 			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
 			const channelLabel = instance.channelChoices.find((c) => c.id === channelUuid)?.label || ''
-			instance.log(
-				'info',
-				`Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`,
-			)
 
 			// Deep clone to avoid mutating cache
 			const next = JSON.parse(JSON.stringify(current.data))
@@ -173,6 +165,8 @@ export async function setAudioChannel(
 
 			audioEntry.channel = channelUuid
 			audioEntry.audio_index = audioIndex
+
+			instance.log('info', `Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`)
 
 			// Update the output's audio channel in the API
 			await fetchJson(instance as TAGMCSInstance, true, `outputs/config/${outputUuid}`, 'PUT', next)

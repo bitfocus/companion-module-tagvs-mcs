@@ -31,7 +31,7 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	selectedAudioChannel: string = ''
 
 	_commandChain?: Promise<any>
-    _lastCommandAt?: number
+	_lastCommandAt?: number
 
 	constructor(internal: unknown) {
 		super(internal)
