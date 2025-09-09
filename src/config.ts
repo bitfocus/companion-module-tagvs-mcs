@@ -5,6 +5,7 @@ export interface ModuleConfig {
 	port: number
 	username: string
 	password: string
+	enableLayoutVariables: boolean
 	useQueuedCommands: boolean
 	queuedCommandDelay: number
 	enablePolling: boolean
@@ -64,6 +65,28 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 		},
 		{
 			type: 'checkbox',
+			id: 'enableLayoutVariables',
+			label: 'Enable Layout Variables',
+			default: false,
+			width: 4,
+		},
+		{
+			type: 'static-text',
+			id: 'enableLayoutVariablesHelp',
+			width: 8,
+			label: '',
+			value:
+				'When enabled, variables will be created for each Layout and its Tiles. This can create a large number of variables depending on the number of layouts and tiles configured in MCS, which could impact performance.',
+		},
+		{
+			type: 'static-text',
+			id: 'hr3',
+			width: 12,
+			label: '',
+			value: '<hr />',
+		},
+		{
+			type: 'checkbox',
 			id: 'useQueuedCommands',
 			label: 'Use Queued Commands',
 			default: false,
@@ -89,7 +112,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 		},
 		{
 			type: 'static-text',
-			id: 'hr3',
+			id: 'hr4',
 			width: 12,
 			label: '',
 			value: '<hr />',

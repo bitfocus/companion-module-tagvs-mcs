@@ -42,17 +42,24 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 			{ variableId: `layout_${layout.uuid}_tile_count`, name: `Layout: ${layout.label} Tile Count` },
 		)
 
-		// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
-		/*const tileCount = layout.tiles?.length || 16
-		for (let i = 0; i < tileCount; i++) {
-			variables.push(
-				{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
-				{ variableId: `layout_${layout.uuid}_tile_${i}_channel`, name: `Layout: ${layout.label} Tile ${i} Channel UUID` },
-				{ variableId: `layout_${layout.uuid}_tile_${i}_channel_label`, name: `Layout: ${layout.label} Tile ${i} Channel Label` },
-				{ variableId: `layout_${layout.uuid}_tile_${i}_text`, name: `Layout: ${layout.label} Tile ${i} Text` },
-			)
-		}*/
-		//undefining tile variables for now as it creates a massive number of variables
+		if (instance.config.enableLayoutVariables == true) {
+			// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
+			const tileCount = layout.tiles?.length || 16
+			for (let i = 0; i < tileCount; i++) {
+				variables.push(
+					{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
+					{
+						variableId: `layout_${layout.uuid}_tile_${i}_channel`,
+						name: `Layout: ${layout.label} Tile ${i} Channel UUID`,
+					},
+					{
+						variableId: `layout_${layout.uuid}_tile_${i}_channel_label`,
+						name: `Layout: ${layout.label} Tile ${i} Channel Label`,
+					},
+					{ variableId: `layout_${layout.uuid}_tile_${i}_text`, name: `Layout: ${layout.label} Tile ${i} Text` },
+				)
+			}
+		}
 	}
 
 	instance.setVariableDefinitions(variables)
