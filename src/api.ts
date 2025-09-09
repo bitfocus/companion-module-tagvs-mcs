@@ -166,7 +166,10 @@ export async function setAudioChannel(
 			audioEntry.channel = channelUuid
 			audioEntry.audio_index = audioIndex
 
-			instance.log('info', `Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`)
+			instance.log(
+				'info',
+				`Setting audio channel "${channelLabel}" on output "${outputLabel}" (audio index ${audioIndex})`,
+			)
 
 			// Update the output's audio channel in the API
 			await fetchJson(instance as TAGMCSInstance, true, `outputs/config/${outputUuid}`, 'PUT', next)
