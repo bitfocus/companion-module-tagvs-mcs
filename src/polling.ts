@@ -34,6 +34,7 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 	try {
 		const outputs = await fetchJson(instance, false, 'outputs/config/')
 		const layouts = await fetchJson(instance, false, 'layouts/config/')
+
 		const channels = await fetchJson(instance, false, 'channels/config/')
 
 		instance.outputs = Array.isArray(outputs) ? outputs : outputs?.data || []
@@ -60,7 +61,7 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		}
 
 		if (changed) {
-			instance.log('debug', 'Choices changed; updating actions')
+			instance.log('debug', 'Choices changed; updating actions, variables, feedbacks')
 			instance.updateActions()
 			instance.updateVariableDefinitions()
 			instance.updateFeedbacks()

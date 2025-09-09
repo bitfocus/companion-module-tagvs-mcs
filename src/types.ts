@@ -18,6 +18,12 @@ export interface OutputConfig {
 export interface LayoutConfig {
 	uuid: string
 	label: string
+	tiles?: Array<{
+		index: number
+		type: string
+		channel?: string
+		text?: string
+	}>
 }
 
 export interface ChannelConfig {

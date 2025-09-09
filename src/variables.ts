@@ -1,7 +1,7 @@
 // File: src/variables.ts
 import { CompanionVariableDefinition } from '@companion-module/base'
 import { TAGMCSInstance } from './main.js'
-import { OutputConfig } from './types.js'
+import { OutputConfig, LayoutConfig } from './types.js'
 
 export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 	const variables: CompanionVariableDefinition[] = []
@@ -35,6 +35,25 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 		)
 	}
 
+	//loop through layouts and build variables
+	for (const layout of instance.layouts as LayoutConfig[]) {
+		variables.push(
+			{ variableId: `layout_${layout.uuid}_label`, name: `Layout: ${layout.label} Label` },
+			{ variableId: `layout_${layout.uuid}_tile_count`, name: `Layout: ${layout.label} Tile Count` },
+		)
+
+		// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
+		const tileCount = layout.tiles?.length || 16
+		for (let i = 0; i < tileCount; i++) {
+			variables.push(
+				{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
+				{ variableId: `layout_${layout.uuid}_tile_${i}_channel`, name: `Layout: ${layout.label} Tile ${i} Channel UUID` },
+				{ variableId: `layout_${layout.uuid}_tile_${i}_channel_label`, name: `Layout: ${layout.label} Tile ${i} Channel Label` },
+				{ variableId: `layout_${layout.uuid}_tile_${i}_text`, name: `Layout: ${layout.label} Tile ${i} Text` },
+			)
+		}
+	}
+
 	instance.setVariableDefinitions(variables)
 }
 
@@ -50,10 +69,26 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 		const layout = instance.layouts.find((l) => l.uuid === output.input.layouts?.[0])
 		if (layout) {
 			vars[`output_${output.uuid}_layout_label`] = layout.label
+			
+			// Also update tile info variables for this layout
+			const tileCount = layout.tiles?.length || 16
+			vars[`layout_${layout.uuid}_tile_count`] = tileCount
+			for (let i = 0; i < tileCount; i++) {
+				const tile = layout.tiles ? layout.tiles[i] : undefined
+				vars[`layout_${layout.uuid}_tile_${i}_type`] = tile?.type || ''
+				vars[`layout_${layout.uuid}_tile_${i}_channel`] = tile?.channel || ''
+				vars[`layout_${layout.uuid}_tile_${i}_channel_label`] = getChannelLabel(instance, tile?.channel || '')
+				vars[`layout_${layout.uuid}_tile_${i}_text`] = tile?.text || ''
+			}
 		} else {
 			vars[`output_${output.uuid}_layout_label`] = ''
 		}
 	}
 
 	instance.setVariableValues(vars)
+}
+
+function getChannelLabel(instance: TAGMCSInstance, channelUuid: string): string {
+	const channel = instance.channels.find((c) => c.uuid === channelUuid)
+	return channel ? channel.label : ''
 }
