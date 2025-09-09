@@ -43,7 +43,7 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 		)
 
 		// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
-		const tileCount = layout.tiles?.length || 16
+		/*const tileCount = layout.tiles?.length || 16
 		for (let i = 0; i < tileCount; i++) {
 			variables.push(
 				{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
@@ -51,7 +51,8 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 				{ variableId: `layout_${layout.uuid}_tile_${i}_channel_label`, name: `Layout: ${layout.label} Tile ${i} Channel Label` },
 				{ variableId: `layout_${layout.uuid}_tile_${i}_text`, name: `Layout: ${layout.label} Tile ${i} Text` },
 			)
-		}
+		}*/
+		//undefining tile variables for now as it creates a massive number of variables
 	}
 
 	instance.setVariableDefinitions(variables)
@@ -69,7 +70,7 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 		const layout = instance.layouts.find((l) => l.uuid === output.input.layouts?.[0])
 		if (layout) {
 			vars[`output_${output.uuid}_layout_label`] = layout.label
-			
+
 			// Also update tile info variables for this layout
 			const tileCount = layout.tiles?.length || 16
 			vars[`layout_${layout.uuid}_tile_count`] = tileCount
