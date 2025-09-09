@@ -7,7 +7,8 @@ import { UpdateActions } from './actions.js'
 import { UpdateFeedbacks } from './feedbacks.js'
 import { UpdateVariableDefinitions, UpdateVariables } from './variables.js'
 
-import { InitConnection, StopPolling } from './api.js'
+import { InitConnection } from './api.js'
+import { StopPolling } from './polling.js'
 
 export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig // Setup in init()
@@ -28,6 +29,9 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	selectedTileNumber: number = 1
 	selectedVideoChannel: string = ''
 	selectedAudioChannel: string = ''
+
+	_commandChain?: Promise<any>
+    _lastCommandAt?: number
 
 	constructor(internal: unknown) {
 		super(internal)

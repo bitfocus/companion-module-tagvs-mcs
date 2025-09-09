@@ -5,6 +5,8 @@ export interface ModuleConfig {
 	port: number
 	username: string
 	password: string
+	useQueuedCommands: boolean
+	queuedCommandDelay: number
 	enablePolling: boolean
 	pollingRate: number
 	verbose: boolean
@@ -56,6 +58,38 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 		{
 			type: 'static-text',
 			id: 'hr2',
+			width: 12,
+			label: '',
+			value: '<hr />',
+		},
+		{
+			type: 'checkbox',
+			id: 'useQueuedCommands',
+			label: 'Use Queued Commands',
+			default: false,
+			width: 4,
+		},
+		{
+			type: 'static-text',
+			id: 'useQueuedCommandsHelp',
+			width: 8,
+			label: '',
+			value:
+				'When enabled, commands will be queued and executed in the order they were received with a delay between each command. This can help prevent overloading the MCS with too many commands at once, which can lead to missed or failed commands.',
+		},
+		{
+			type: 'number',
+			id: 'queuedCommandDelay',
+			label: 'Queued Command Delay (ms)',
+			width: 4,
+			default: 800,
+			min: 500,
+			max: 2000,
+			isVisible: (opts) => opts['useQueuedCommands'] === true,
+		},
+		{
+			type: 'static-text',
+			id: 'hr3',
 			width: 12,
 			label: '',
 			value: '<hr />',
