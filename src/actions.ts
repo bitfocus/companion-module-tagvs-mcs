@@ -211,7 +211,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 				const layoutUuid = evt.options.useSelectedLayout ? instance.selectedLayout : String(evt.options.layout || '')
 				const tileNumber = evt.options.useSelectedTileNumber
 					? instance.selectedTileNumber
-					: Number(await instance.parseVariablesInString(String(evt.options.tileNumber)))
+					: Number(await String(evt.options.tileNumber))
 				const videoChannelUuid = evt.options.useSelectedVideoChannel
 					? instance.selectedVideoChannel
 					: String(evt.options.videoChannel || '')
