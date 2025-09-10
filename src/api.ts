@@ -61,7 +61,7 @@ export async function modifyLayout(
 			const channelLabel = instance.channelChoices.find((c) => c.id === videoChannelUuid)?.label || ''
 
 			const next = JSON.parse(JSON.stringify(layout.data))
-			
+
 			next.tiles = next.tiles || []
 			//find the tile object by doing a find in next.tiles for tile.index == tileNumber
 			const tile = next.tiles.find((t: any) => t.index === tileNumber)
