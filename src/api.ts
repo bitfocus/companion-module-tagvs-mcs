@@ -60,12 +60,13 @@ export async function modifyLayout(
 			//get the channel label
 			const channelLabel = instance.channelChoices.find((c) => c.id === videoChannelUuid)?.label || ''
 
-			const next = JSON.parse(JSON.stringify(layout))
+			const next = JSON.parse(JSON.stringify(layout.data))
+			
 			next.tiles = next.tiles || []
 			//find the tile object by doing a find in next.tiles for tile.index == tileNumber
 			const tile = next.tiles.find((t: any) => t.index === tileNumber)
 			if (!tile) {
-				instance.log('error', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
+				instance.log('debug', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
 				return
 			}
 
