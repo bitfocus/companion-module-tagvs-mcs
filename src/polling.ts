@@ -77,12 +77,12 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		instance.updateVariables()
 		instance.checkFeedbacks()
 	} catch (e) {
-        //if fetch failed, network error, etc
-        instance.updateStatus(InstanceStatus.ConnectionFailure, 'Polling Failed')
-        if (instance.config.verbose) {
-           instance.log('debug', `Polling error: ${e}`)
-        }
-		
+		//if fetch failed, network error, etc
+		instance.updateStatus(InstanceStatus.ConnectionFailure, 'Polling Failed')
+		if (instance.config.verbose) {
+			instance.log('debug', `Polling error: ${e}`)
+		}
+
 		console.log(e)
 		StopPolling(instance)
 	}

@@ -125,7 +125,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 				},
 			],
 			callback: async (evt) => {
-				const tileNumber = Number((String(evt.options.tileNumber) ?? '1'))
+				const tileNumber = Number(String(evt.options.tileNumber) ?? '1')
 
 				//if nan, less than 1 or greater than 64, error
 				if (isNaN(tileNumber)) {
@@ -225,7 +225,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					instance.log('error', 'Modify Layout: Tile Number must be between 1 and 64')
 					return
 				}
-				
+
 				await modifyLayout(instance, layoutUuid, tileNumber, videoChannelUuid)
 
 				// If applytoOutput is true, apply the modified layout to the selected output

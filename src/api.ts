@@ -3,7 +3,7 @@ import type { TAGMCSInstance } from './main.js'
 import { login } from './login.js'
 
 import { BuildBaseUrl, fetchJson } from './utils.js'
-import { StartPolling, getState } from './polling.js'
+import { StartPolling, StopPolling, getState } from './polling.js'
 import { scheduleCommand, DEFAULT_MIN_COMMAND_GAP_MS } from './scheduling.js'
 
 export async function InitConnection(instance: TAGMCSInstance): Promise<void> {
@@ -19,10 +19,18 @@ export async function InitConnection(instance: TAGMCSInstance): Promise<void> {
 		instance.log('debug', `Base URL set to ${instance.baseUrl}`)
 	}
 
-	await login(instance).then(() => {
-		getState(instance)
-		StartPolling(instance, instance.config.pollingRate || 5000)
-	})
+	try {
+		await login(instance) // must succeed first
+		await getState(instance) // then pull initial snapshot
+		StartPolling(instance, instance.config.pollingRate || 5000) // finally start polling
+	} catch (err) {
+		//if econnrefused, it is probably the wrong IP/Port or server is down
+		instance.updateStatus(InstanceStatus.ConnectionFailure, 'Connection failed - check configuration')
+		if (instance.config.verbose) {
+			instance.log('error', `Connection failed: ${err}`)
+		}
+		StopPolling(instance)
+	}
 }
 
 export async function modifyLayout(
