@@ -12,20 +12,32 @@ export async function login(instance: TAGMCSInstance): Promise<void> {
 	const url = `${(instance as any).baseUrl}/auth/login`
 	const body = { username: instance.config.username, password: instance.config.password }
 
-	const res = await rawFetch(instance, url, 'POST', body)
-	const json = await safeJson(res)
+    try {
+        const res = await rawFetch(instance, url, 'POST', body)
+        const json = await safeJson(res)
 
-	if (!json?.data?.access_token || !json?.data?.refresh_token) {
-		throw new Error('Login did not return tokens')
-	}
+        if (!json?.data?.access_token || !json?.data?.refresh_token) {
+            throw new Error('Login did not return tokens')
+        }
 
-	const access = String(json.data.access_token)
-	const refresh = String(json.data.refresh_token)
-	const exp = decodeJwtExp(access)
+        const access = String(json.data.access_token)
+        const refresh = String(json.data.refresh_token)
+        const exp = decodeJwtExp(access)
 
-	writeTokens(instance, { accessToken: access, refreshToken: refresh, exp })
-	if (instance.config.verbose) instance.log('debug', `Login success; access exp @ ${exp}`)
-	instance.updateStatus(InstanceStatus.Ok)
+        writeTokens(instance, { accessToken: access, refreshToken: refresh, exp })
+        if (instance.config.verbose) {
+            instance.log('debug', `Login success; access exp @ ${exp}`)
+        }
+
+        instance.updateStatus(InstanceStatus.Ok)
+    } catch (error: any) {
+        //if fetch failed, network error, etc
+        instance.updateStatus(InstanceStatus.ConnectionFailure, 'Login failed - check configuration')
+        instance.log('debug', `Login failed - check configuration for correct IP/Port and credentials.`)
+        if (instance.config.verbose) {
+            instance.log('debug', `Login failed: ${String(error)}`)
+        }
+    }
 }
 
 export function readTokens(instance: TAGMCSInstance): Tokens {

@@ -19,9 +19,10 @@ export async function InitConnection(instance: TAGMCSInstance): Promise<void> {
 		instance.log('debug', `Base URL set to ${instance.baseUrl}`)
 	}
 
-	await login(instance)
-	await getState(instance)
-	StartPolling(instance, instance.config.pollingRate || 5000)
+	await login(instance).then(() => {
+		getState(instance)
+		StartPolling(instance, instance.config.pollingRate || 5000)
+	})
 }
 
 export async function modifyLayout(

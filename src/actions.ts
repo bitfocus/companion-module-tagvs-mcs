@@ -20,7 +20,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 			callback: async (evt) => {
 				const outputUuid = String(evt.options.output || '')
 				if (!outputUuid) {
-					instance.log('error', 'select_output: output is required')
+					instance.log('error', 'Select Output: Output UUID is required')
 					return
 				}
 
@@ -125,10 +125,16 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 				},
 			],
 			callback: async (evt) => {
-				const tileNumber = Number(await instance.parseVariablesInString(String(evt.options.tileNumber) ?? '1'))
+				const tileNumber = Number((String(evt.options.tileNumber) ?? '1'))
+
+				//if nan, less than 1 or greater than 64, error
+				if (isNaN(tileNumber)) {
+					instance.log('error', 'Select Tile Number: Tile Number must be a number')
+					return
+				}
 
 				if (tileNumber < 1 || tileNumber > 64) {
-					instance.log('error', 'selectTileNumber: tile number must be between 1 and 64')
+					instance.log('error', 'Select Tile Number: Tile Number must be between 1 and 64')
 					return
 				}
 				instance.setVariableValues({
@@ -211,12 +217,12 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 				const layoutUuid = evt.options.useSelectedLayout ? instance.selectedLayout : String(evt.options.layout || '')
 				const tileNumber = evt.options.useSelectedTileNumber
 					? instance.selectedTileNumber
-					: Number(await String(evt.options.tileNumber))
+					: Number(String(evt.options.tileNumber))
 				const videoChannelUuid = evt.options.useSelectedVideoChannel
 					? instance.selectedVideoChannel
 					: String(evt.options.videoChannel || '')
 				if (tileNumber < 1 || tileNumber > 64) {
-					instance.log('error', 'modifyLayout: tile number must be between 1 and 64')
+					instance.log('error', 'Modify Layout: Tile Number must be between 1 and 64')
 					return
 				}
 				await modifyLayout(instance, layoutUuid, tileNumber, videoChannelUuid)

@@ -1,3 +1,4 @@
+import { InstanceStatus } from '@companion-module/base'
 import type { TAGMCSInstance } from './main.js'
 import { fetchJson, BuildOutputChoices, BuildLayoutChoices, BuildChannelChoices } from './utils.js'
 
@@ -76,7 +77,12 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		instance.updateVariables()
 		instance.checkFeedbacks()
 	} catch (e) {
-		instance.log('error', `Polling error: ${e}`)
+        //if fetch failed, network error, etc
+        instance.updateStatus(InstanceStatus.ConnectionFailure, 'Polling Failed')
+        if (instance.config.verbose) {
+           instance.log('debug', `Polling error: ${e}`)
+        }
+		
 		console.log(e)
 		StopPolling(instance)
 	}
