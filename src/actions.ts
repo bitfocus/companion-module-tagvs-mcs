@@ -225,6 +225,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					instance.log('error', 'Modify Layout: Tile Number must be between 1 and 64')
 					return
 				}
+				
 				await modifyLayout(instance, layoutUuid, tileNumber, videoChannelUuid)
 
 				// If applytoOutput is true, apply the modified layout to the selected output
