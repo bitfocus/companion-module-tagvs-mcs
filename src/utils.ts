@@ -36,6 +36,14 @@ export function BuildChannelChoices(instance: TAGMCSInstance): Array<{ id: strin
 	}))
 }
 
+export function BuildDeviceChoices(instance: TAGMCSInstance): Array<{ id: string; label: string }> {
+	const arr = Array.isArray(instance.devices) ? instance.devices : []
+	return arr.map((d: any) => ({
+		id: d.uuid,
+		label: d.label || d.uuid,
+	}))
+}
+
 export async function safeJson(res: Response): Promise<any> {
 	try {
 		return await res.json()

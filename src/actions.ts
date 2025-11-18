@@ -1,7 +1,7 @@
 // File: src/actions.ts
 import { TAGMCSInstance } from './main.js'
 import { CompanionActionDefinitions } from '@companion-module/base'
-import { modifyLayout, applyLayout, setAudioChannel } from './api.js'
+import { modifyLayout, setOutputStateOn, setOutputStateOff, applyLayout, setAudioChannel } from './api.js'
 
 export function UpdateActions(instance: TAGMCSInstance): void {
 	const actions: CompanionActionDefinitions = {
@@ -145,6 +145,32 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 			},
 		},
 
+		selectDevice: {
+			name: 'Select Device',
+			description: 'Select a Device to use in other actions.',
+			options: [
+				{
+					type: 'dropdown',
+					id: 'device',
+					label: 'Device',
+					default: instance.deviceChoices[0]?.id || '',
+					choices: instance.deviceChoices,
+				},
+			],
+			callback: async (evt) => {
+				const deviceUuid = String(evt.options.device || '')
+
+				instance.selectedDevice = deviceUuid
+				const deviceChoice = instance.deviceChoices.find((o) => o.id === deviceUuid)
+				const deviceLabel = deviceChoice ? deviceChoice.label : ''
+
+				instance.setVariableValues({
+					selected_device: deviceUuid,
+					selected_device_label: deviceLabel,
+				})
+			},
+		},
+
 		modifyLayout: {
 			name: 'Modify Layout',
 			description: 'Modify a layout by changing the Video Channel assigned to a Tile Number.',
@@ -236,6 +262,77 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					const outputUuid = String(evt.options.output || '')
 					await applyLayout(instance, outputUuid, layoutUuid)
 				}
+			},
+		},
+
+		setOutputStateOn: {
+			name: 'Turn Output On',
+			description: 'Turn an Output on.',
+			options: [
+				{
+					type: 'checkbox',
+					id: 'useSelectedOutput',
+					label: 'Use Selected Output',
+					default: false,
+				},
+				{
+					type: 'dropdown',
+					id: 'output',
+					label: 'Output',
+					default: instance.outputChoices[0]?.id || '',
+					choices: instance.outputChoices,
+					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+				},
+				{
+					type: 'checkbox',
+					id: 'useSelectedDevice',
+					label: 'Use Selected Device',
+					default: false,
+				},
+				{
+					type: 'dropdown',
+					id: 'device',
+					label: 'Device',
+					default: instance.deviceChoices[0]?.id || '',
+					choices: instance.deviceChoices,
+					isVisible: (opts) => opts['useSelectedDevice'] !== true,
+				},
+			],
+			callback: async (evt) => {
+				// If useSelectedOutput is true, use the selected output UUID
+				const outputUuid = evt.options.useSelectedOutput ? instance.selectedOutput : String(evt.options.output || '')
+
+				// If useSelectedDevice is true, use the selected device UUID
+				const deviceUuid = evt.options.useSelectedDevice ? instance.selectedDevice : String(evt.options.device || '')
+
+				await setOutputStateOn(instance, outputUuid, deviceUuid)
+			},
+		},
+
+		setOutputStateOff: {
+			name: 'Turn Output Off',
+			description: 'Turn an Output off.',
+			options: [
+				{
+					type: 'checkbox',
+					id: 'useSelectedOutput',
+					label: 'Use Selected Output',
+					default: false,
+				},
+				{
+					type: 'dropdown',
+					id: 'output',
+					label: 'Output',
+					default: instance.outputChoices[0]?.id || '',
+					choices: instance.outputChoices,
+					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+				},
+			],
+			callback: async (evt) => {
+				// If useSelectedOutput is true, use the selected output UUID
+				const outputUuid = evt.options.useSelectedOutput ? instance.selectedOutput : String(evt.options.output || '')
+
+				await setOutputStateOff(instance, outputUuid)
 			},
 		},
 

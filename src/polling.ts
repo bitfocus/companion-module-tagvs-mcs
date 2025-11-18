@@ -1,6 +1,6 @@
 import { InstanceStatus } from '@companion-module/base'
 import type { TAGMCSInstance } from './main.js'
-import { fetchJson, BuildOutputChoices, BuildLayoutChoices, BuildChannelChoices } from './utils.js'
+import { fetchJson, BuildOutputChoices, BuildLayoutChoices, BuildChannelChoices, BuildDeviceChoices } from './utils.js'
 
 export function StartPolling(instance: TAGMCSInstance, interval = 5000): void {
 	if (instance.pollInterval) {
@@ -38,14 +38,18 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 
 		const channels = await fetchJson(instance, false, 'channels/config/')
 
+		const devices = await fetchJson(instance, false, 'devices/config/')
+
 		instance.outputs = Array.isArray(outputs) ? outputs : outputs?.data || []
 		instance.layouts = Array.isArray(layouts) ? layouts : layouts?.data || []
 		instance.channels = Array.isArray(channels) ? channels : channels?.data || []
+		instance.devices = Array.isArray(devices) ? devices : devices?.data || []
 
 		//compare these choices to existing ones, and only rebuild if changed
 		const outputChoices = BuildOutputChoices(instance)
 		const layoutChoices = BuildLayoutChoices(instance)
 		const channelChoices = BuildChannelChoices(instance)
+		const deviceChoices = BuildDeviceChoices(instance)
 
 		let changed = false
 		if (JSON.stringify(outputChoices) !== JSON.stringify(instance.outputChoices)) {
@@ -60,6 +64,10 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 			instance.channelChoices = channelChoices
 			changed = true
 		}
+		if (JSON.stringify(deviceChoices) !== JSON.stringify(instance.deviceChoices)) {
+			instance.deviceChoices = deviceChoices
+			changed = true
+		}
 
 		if (changed) {
 			instance.log('debug', 'Choices changed; updating actions, variables, feedbacks')
@@ -72,6 +80,7 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 			output_count: instance.outputs.length,
 			layout_count: instance.layouts.length,
 			channel_count: instance.channels.length,
+			device_count: instance.devices.length,
 		})
 
 		instance.updateVariables()

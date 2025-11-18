@@ -90,6 +90,88 @@ export async function modifyLayout(
 	)
 }
 
+export async function setOutputStateOn(
+	instance: TAGMCSInstance,
+	outputUuid: string,
+	deviceUuid: string,
+): Promise<void> {
+	if (instance.config.verbose) {
+		instance.log('debug', `setOutputStateOn called with outputUuid=${outputUuid}, deviceUuid=${deviceUuid}`)
+	}
+
+	let minGapMs = instance.config.queuedCommandDelay || DEFAULT_MIN_COMMAND_GAP_MS
+
+	if (instance.config.useQueuedCommands == false) {
+		minGapMs = 0
+	}
+
+	await scheduleCommand(
+		instance,
+		async () => {
+			// Fetch the current output configuration
+			let current = await getOutput(instance, outputUuid)
+
+			if (!current) {
+				instance.log('error', `Cannot Set Device State: output ${outputUuid} not found`)
+				return
+			}
+
+			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
+			const deviceLabel = instance.deviceChoices.find((d) => d.id === deviceUuid)?.label || ''
+
+			const body = {
+				device: deviceUuid,
+				output: outputUuid,
+			}
+
+			instance.log('info', `Setting Output "${outputLabel}" state to On using Device ${deviceLabel}`)
+
+			// Update the output's state in the API
+			await fetchJson(instance as TAGMCSInstance, true, `outputs/command/stream/enable`, 'POST', body)
+		},
+		{ tag: 'setDeviceStateOn', minGapMs: minGapMs },
+	)
+}
+
+export async function setOutputStateOff(instance: TAGMCSInstance, outputUuid: string): Promise<void> {
+	if (instance.config.verbose) {
+		instance.log('debug', `setOutputStateOff called with outputUuid=${outputUuid}`)
+	}
+
+	let minGapMs = instance.config.queuedCommandDelay || DEFAULT_MIN_COMMAND_GAP_MS
+
+	if (instance.config.useQueuedCommands == false) {
+		minGapMs = 0
+	}
+
+	await scheduleCommand(
+		instance,
+		async () => {
+			// Fetch the current output configuration
+			let current = await getOutput(instance, outputUuid)
+
+			if (!current) {
+				instance.log('error', `Cannot Set Output State: output ${outputUuid} not found`)
+				return
+			}
+
+			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
+
+			//body is just output
+			const body = {
+				output: outputUuid,
+			}
+
+			instance.log('info', `Setting Output "${outputLabel}" state to Off`)
+
+			// Update the output's state in the API
+			// /outputs/command/stream/disable
+			await fetchJson(instance as TAGMCSInstance, true, `outputs/command/stream/disable`, 'POST', body)
+		},
+		{ tag: 'setOutputStateOff', minGapMs: minGapMs },
+	)
+}
+
 export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, layoutUuid: string): Promise<void> {
 	if (instance.config.verbose) {
 		instance.log('debug', `applyLayout called with outputUuid=${outputUuid}, layoutUuid=${layoutUuid}`)

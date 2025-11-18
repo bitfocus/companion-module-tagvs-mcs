@@ -9,6 +9,7 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 	variables.push({ variableId: 'output_count', name: 'Output Count' })
 	variables.push({ variableId: 'layout_count', name: 'Layout Count' })
 	variables.push({ variableId: 'channel_count', name: 'Channel Count' })
+	variables.push({ variableId: 'device_count', name: 'Device Count' })
 
 	//selected output, layout, channel
 	variables.push({ variableId: 'selected_output', name: 'Selected Output UUID' })
@@ -23,6 +24,9 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 
 	variables.push({ variableId: 'selected_tile_number', name: 'Selected Tile Number' })
 
+	variables.push({ variableId: 'selected_device', name: 'Selected Device UUID' })
+	variables.push({ variableId: 'selected_device_label', name: 'Selected Device Label' })
+
 	//loop through outputs and build variables
 	for (const output of instance.outputs as OutputConfig[]) {
 		variables.push(
@@ -32,6 +36,9 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 			{ variableId: `output_${output.uuid}_audio_channel`, name: `Output: ${output.label} Audio Channel UUID` },
 			{ variableId: `output_${output.uuid}_audio_channel_label`, name: `Output: ${output.label} Audio Channel Label` },
 			{ variableId: `output_${output.uuid}_mux_audio_pid`, name: `Output: ${output.label} Mux Audio PID` },
+
+			{ variableId: `output_${output.uuid}_device`, name: `Output: ${output.label} Device UUID` },
+			{ variableId: `output_${output.uuid}_device_label`, name: `Output: ${output.label} Device Label` },
 		)
 	}
 
@@ -74,6 +81,9 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 		vars[`output_${output.uuid}_audio_channel`] = output.input?.audio?.[0]?.channel || ''
 		vars[`output_${output.uuid}_mux_audio_pid`] = output.muxing?.audio?.[0]?.pid || ''
 
+		vars[`output_${output.uuid}_device`] = output.device || ''
+		vars[`output_${output.uuid}_device_label`] = getDeviceLabel(instance, output.device || '')
+
 		const layout = instance.layouts.find((l) => l.uuid === output.input.layouts?.[0])
 		if (layout) {
 			vars[`output_${output.uuid}_layout_label`] = layout.label
@@ -99,4 +109,9 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 function getChannelLabel(instance: TAGMCSInstance, channelUuid: string): string {
 	const channel = instance.channels.find((c) => c.uuid === channelUuid)
 	return channel ? channel.label : ''
+}
+
+function getDeviceLabel(instance: TAGMCSInstance, deviceUuid: string): string {
+	const device = instance.devices.find((d) => d.uuid === deviceUuid)
+	return device ? device.label : ''
 }

@@ -19,16 +19,20 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	outputs: any[] = [] // Cached outputs from the API
 	layouts: any[] = [] // Cached layouts from the API
 	channels: any[] = [] // Cached audio channels from the API
+	devices: any[] = [] // Cached devices from the API
 
 	outputChoices: Array<{ id: string; label: string }> = []
 	layoutChoices: Array<{ id: string; label: string }> = []
 	channelChoices: Array<{ id: string; label: string }> = []
+	deviceChoices: Array<{ id: string; label: string }> = []
 
 	selectedOutput: string = ''
 	selectedLayout: string = ''
 	selectedTileNumber: number = 1
 	selectedVideoChannel: string = ''
 	selectedAudioChannel: string = ''
+
+	selectedDevice: string = ''
 
 	_commandChain?: Promise<any>
 	_lastCommandAt?: number
