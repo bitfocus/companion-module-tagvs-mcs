@@ -58,9 +58,9 @@ export async function modifyLayout(
 			// Fetch the current layout configuration
 			let layout = await getLayout(instance, layoutUuid)
 
+			// throw rather than return, so whoever ran the action learns that nothing changed
 			if (!layout) {
-				instance.log('error', `Cannot Modify Layout: Layout ${layoutUuid} not found`)
-				return
+				throw new Error(`Cannot Modify Layout: Layout ${layoutUuid} not found`)
 			}
 
 			//get the layout label
@@ -75,8 +75,7 @@ export async function modifyLayout(
 			//find the tile object by doing a find in next.tiles for tile.index == tileNumber
 			const tile = next.tiles.find((t: any) => t.index === tileNumber)
 			if (!tile) {
-				instance.log('debug', `Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
-				return
+				throw new Error(`Cannot Modify Layout: Tile Number ${tileNumber} not found in Layout "${layoutLabel}"`)
 			}
 
 			tile.channel = videoChannelUuid
@@ -189,8 +188,7 @@ export async function applyLayout(instance: TAGMCSInstance, outputUuid: string, 
 			let current = await getOutput(instance, outputUuid)
 
 			if (!current) {
-				instance.log('error', `Cannot Apply Layout: output ${outputUuid} not found`)
-				return
+				throw new Error(`Cannot Apply Layout: output ${outputUuid} not found`)
 			}
 
 			const outputLabel = instance.outputChoices.find((o) => o.id === outputUuid)?.label || ''
