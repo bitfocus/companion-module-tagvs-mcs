@@ -89,7 +89,7 @@ Variables are generated per output, layout, and channel.
 ### ➤ Layouts
 
 - `layout_<uuid>_label` — Display Label UUID of the Layout
-- `layout_<uuid>_tile_count` — Number of Tiles in the Layout
+- `layout_<uuid>_tile_count` — Number of Tiles in the Layout (blank until the MCS has listed the layout's tiles)
 
 #### ➤ Layouts - Tiles
 
