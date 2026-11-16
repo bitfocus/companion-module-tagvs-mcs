@@ -21,6 +21,9 @@ This module integrates with the TAG Video Systems MCS API (v5), allowing you to 
 - **Polling Rate (milliseconds)**  
   How often to refresh data (default: `5000` seconds).
 
+- **Enable Layout Variables**  
+  Creates the tile variables below for every layout, whether or not it is on an output. With many layouts this is a lot of variables, and the module may read each layout's tiles from the MCS on every poll.
+
 - **Verbose Mode**  
   Enable logging of internal actions and API responses for debugging.
 
@@ -90,7 +93,10 @@ Variables are generated per output, layout, and channel.
 
 #### ➤ Layouts - Tiles
 
+Only with **Enable Layout Variables** on. `${i}` counts from `0` in the order the MCS lists the tiles. Use `_number` for the Tile Number that **Modify Layout** takes.
+
 - `layout_<uuid>_tile_${i}_type` - Tile Type (Clock, Channel, Text Box, etc.)
+- `layout_<uuid>_tile_${i}_number` - Tile Number, as **Modify Layout** takes it
 - `layout_<uuid>_tile_${i}_channel` - Tile Channel UUID (if type Channel)
 - `layout_<uuid>_tile_${i}_channel_label` - Tile Channel Label (if type Channel)
 - `layout_<uuid>_tile_${i}_text` - Tile Text (if type Text Box)

@@ -14,6 +14,7 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig // Setup in init()
 
 	pollInterval: NodeJS.Timeout | undefined = undefined // Interval for polling data
+	pollInFlight: boolean = false // Whether a poll is still running
 	baseUrl: string = '' // Base URL for the TAG MCS API
 
 	outputs: any[] = [] // Cached outputs from the API
@@ -25,6 +26,8 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	layoutChoices: Array<{ id: string; label: string }> = []
 	channelChoices: Array<{ id: string; label: string }> = []
 	deviceChoices: Array<{ id: string; label: string }> = []
+
+	layoutTileCounts: string = '' // Tile count per layout at the last poll, to know when tile variables change
 
 	selectedOutput: string = ''
 	selectedLayout: string = ''
