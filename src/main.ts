@@ -51,7 +51,8 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
 
-		await this.initConnection()
+		// Not awaited: Companion fails init if it doesn't return promptly, and an unreachable MCS can take longer
+		void this.initConnection()
 	}
 
 	// When module gets deleted
@@ -63,7 +64,7 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	async configUpdated(config: ModuleConfig): Promise<void> {
 		this.config = config
 
-		await this.initConnection()
+		void this.initConnection()
 	}
 
 	// Return config fields for web config

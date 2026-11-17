@@ -1,8 +1,5 @@
 {
-	"extends": "@companion-module/tools/tsconfig/node18/recommended",
+	"extends": "@companion-module/tools/tsconfig/node26/recommended",
 	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules/**"],
-	"compilerOptions": {
-		"types": ["node"]
-	}
+	"exclude": ["node_modules/**"]
 }

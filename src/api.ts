@@ -13,6 +13,7 @@ export async function InitConnection(instance: TAGMCSInstance): Promise<void> {
 		return
 	}
 
+	instance.updateStatus(InstanceStatus.Connecting)
 	instance.baseUrl = BuildBaseUrl(instance.config)
 
 	if (instance.config.verbose) {
