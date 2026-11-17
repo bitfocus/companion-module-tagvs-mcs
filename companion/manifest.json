@@ -2,7 +2,7 @@
 	"id": "tagvs-mcs",
 	"name": "tagvs-mcs",
 	"shortname": "tagvs-mcs",
-	"description": "Controls TAG Video Systems' Media Control System",
+	"description": "Controls TAG Video Systems Media Control System",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-tagvs-mcs.git",
@@ -22,5 +22,5 @@
 	},
 	"manufacturer": "TAG Video Systems",
 	"products": ["MCS"],
-	"keywords": []
+	"keywords": ["multiviewer", "monitoring", "layout", "tile", "video", "audio", "ST 2110", "IP video"]
 }
