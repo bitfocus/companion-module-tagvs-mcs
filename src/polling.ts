@@ -108,7 +108,7 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 		})
 
 		instance.updateVariables()
-		instance.checkFeedbacks()
+		instance.checkAllFeedbacks()
 	} catch (e) {
 		//if fetch failed, network error, etc
 		instance.updateStatus(InstanceStatus.ConnectionFailure, 'Polling Failed')

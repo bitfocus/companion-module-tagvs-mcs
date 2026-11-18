@@ -1,74 +1,65 @@
 // File: src/variables.ts
-import { CompanionVariableDefinition } from '@companion-module/base'
+import type { CompanionVariableDefinitions } from '@companion-module/base'
 import { TAGMCSInstance } from './main.js'
 import { OutputConfig, LayoutConfig } from './types.js'
 
 export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
-	const variables: CompanionVariableDefinition[] = []
+	const variables: CompanionVariableDefinitions = {
+		output_count: { name: 'Output Count' },
+		layout_count: { name: 'Layout Count' },
+		channel_count: { name: 'Channel Count' },
+		device_count: { name: 'Device Count' },
 
-	variables.push({ variableId: 'output_count', name: 'Output Count' })
-	variables.push({ variableId: 'layout_count', name: 'Layout Count' })
-	variables.push({ variableId: 'channel_count', name: 'Channel Count' })
-	variables.push({ variableId: 'device_count', name: 'Device Count' })
+		//selected output, layout, channel
+		selected_output: { name: 'Selected Output UUID' },
+		selected_output_label: { name: 'Selected Output Label' },
+		selected_layout: { name: 'Selected Layout UUID' },
+		selected_layout_label: { name: 'Selected Layout Label' },
 
-	//selected output, layout, channel
-	variables.push({ variableId: 'selected_output', name: 'Selected Output UUID' })
-	variables.push({ variableId: 'selected_output_label', name: 'Selected Output Label' })
-	variables.push({ variableId: 'selected_layout', name: 'Selected Layout UUID' })
-	variables.push({ variableId: 'selected_layout_label', name: 'Selected Layout Label' })
+		selected_video_channel: { name: 'Selected Video Channel UUID' },
+		selected_video_channel_label: { name: 'Selected Video Channel Label' },
+		selected_audio_channel: { name: 'Selected Audio Channel UUID' },
+		selected_audio_channel_label: { name: 'Selected Audio Channel Label' },
 
-	variables.push({ variableId: 'selected_video_channel', name: 'Selected Video Channel UUID' })
-	variables.push({ variableId: 'selected_video_channel_label', name: 'Selected Video Channel Label' })
-	variables.push({ variableId: 'selected_audio_channel', name: 'Selected Audio Channel UUID' })
-	variables.push({ variableId: 'selected_audio_channel_label', name: 'Selected Audio Channel Label' })
+		selected_tile_number: { name: 'Selected Tile Number' },
 
-	variables.push({ variableId: 'selected_tile_number', name: 'Selected Tile Number' })
-
-	variables.push({ variableId: 'selected_device', name: 'Selected Device UUID' })
-	variables.push({ variableId: 'selected_device_label', name: 'Selected Device Label' })
+		selected_device: { name: 'Selected Device UUID' },
+		selected_device_label: { name: 'Selected Device Label' },
+	}
 
 	//loop through outputs and build variables
 	for (const output of instance.outputs as OutputConfig[]) {
-		variables.push(
-			{ variableId: `output_${output.uuid}_label`, name: `Output: ${output.label} Label` },
-			{ variableId: `output_${output.uuid}_layout`, name: `Output: ${output.label} Current Layout UUID` },
-			{ variableId: `output_${output.uuid}_layout_label`, name: `Output: ${output.label} Current Layout Label` },
-			{ variableId: `output_${output.uuid}_audio_channel`, name: `Output: ${output.label} Audio Channel UUID` },
-			{ variableId: `output_${output.uuid}_audio_channel_label`, name: `Output: ${output.label} Audio Channel Label` },
-			{ variableId: `output_${output.uuid}_mux_audio_pid`, name: `Output: ${output.label} Mux Audio PID` },
+		Object.assign(variables, {
+			[`output_${output.uuid}_label`]: { name: `Output: ${output.label} Label` },
+			[`output_${output.uuid}_layout`]: { name: `Output: ${output.label} Current Layout UUID` },
+			[`output_${output.uuid}_layout_label`]: { name: `Output: ${output.label} Current Layout Label` },
+			[`output_${output.uuid}_audio_channel`]: { name: `Output: ${output.label} Audio Channel UUID` },
+			[`output_${output.uuid}_audio_channel_label`]: { name: `Output: ${output.label} Audio Channel Label` },
+			[`output_${output.uuid}_mux_audio_pid`]: { name: `Output: ${output.label} Mux Audio PID` },
 
-			{ variableId: `output_${output.uuid}_device`, name: `Output: ${output.label} Device UUID` },
-			{ variableId: `output_${output.uuid}_device_label`, name: `Output: ${output.label} Device Label` },
-		)
+			[`output_${output.uuid}_device`]: { name: `Output: ${output.label} Device UUID` },
+			[`output_${output.uuid}_device_label`]: { name: `Output: ${output.label} Device Label` },
+		})
 	}
 
 	//loop through layouts and build variables
 	for (const layout of instance.layouts as LayoutConfig[]) {
-		variables.push(
-			{ variableId: `layout_${layout.uuid}_label`, name: `Layout: ${layout.label} Label` },
-			{ variableId: `layout_${layout.uuid}_tile_count`, name: `Layout: ${layout.label} Tile Count` },
-		)
+		variables[`layout_${layout.uuid}_label`] = { name: `Layout: ${layout.label} Label` }
+		variables[`layout_${layout.uuid}_tile_count`] = { name: `Layout: ${layout.label} Tile Count` }
 
 		if (instance.config.enableLayoutVariables == true) {
 			// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
 			const tileCount = definedTileCount(layout)
 			for (let i = 0; i < tileCount; i++) {
-				variables.push(
-					{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
-					{
-						variableId: `layout_${layout.uuid}_tile_${i}_number`,
-						name: `Layout: ${layout.label} Tile ${i} Tile Number`,
-					},
-					{
-						variableId: `layout_${layout.uuid}_tile_${i}_channel`,
-						name: `Layout: ${layout.label} Tile ${i} Channel UUID`,
-					},
-					{
-						variableId: `layout_${layout.uuid}_tile_${i}_channel_label`,
+				Object.assign(variables, {
+					[`layout_${layout.uuid}_tile_${i}_type`]: { name: `Layout: ${layout.label} Tile ${i} Type` },
+					[`layout_${layout.uuid}_tile_${i}_number`]: { name: `Layout: ${layout.label} Tile ${i} Tile Number` },
+					[`layout_${layout.uuid}_tile_${i}_channel`]: { name: `Layout: ${layout.label} Tile ${i} Channel UUID` },
+					[`layout_${layout.uuid}_tile_${i}_channel_label`]: {
 						name: `Layout: ${layout.label} Tile ${i} Channel Label`,
 					},
-					{ variableId: `layout_${layout.uuid}_tile_${i}_text`, name: `Layout: ${layout.label} Tile ${i} Text` },
-				)
+					[`layout_${layout.uuid}_tile_${i}_text`]: { name: `Layout: ${layout.label} Tile ${i} Text` },
+				})
 			}
 		}
 	}

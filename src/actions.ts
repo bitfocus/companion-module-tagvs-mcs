@@ -1,10 +1,38 @@
 // File: src/actions.ts
 import { TAGMCSInstance } from './main.js'
-import { CompanionActionDefinitions } from '@companion-module/base'
+import type { CompanionActionDefinitions } from '@companion-module/base'
 import { modifyLayout, setOutputStateOn, setOutputStateOff, applyLayout, setAudioChannel } from './api.js'
 
+type UseSelectedOutput = { useSelectedOutput: boolean; output: string }
+
+export type ActionsSchema = {
+	selectOutput: { options: { output: string } }
+	selectLayout: { options: { layout: string } }
+	selectVideoChannel: { options: { channel: string } }
+	selectAudioChannel: { options: { channel: string } }
+	selectTileNumber: { options: { tileNumber: string } }
+	selectDevice: { options: { device: string } }
+	modifyLayout: {
+		options: UseSelectedOutput & {
+			useSelectedLayout: boolean
+			layout: string
+			useSelectedTileNumber: boolean
+			tileNumber: string
+			useSelectedVideoChannel: boolean
+			videoChannel: string
+			applytoOutput: boolean
+		}
+	}
+	setOutputStateOn: { options: UseSelectedOutput & { useSelectedDevice: boolean; device: string } }
+	setOutputStateOff: { options: UseSelectedOutput }
+	applyLayout: { options: UseSelectedOutput & { useSelectedLayout: boolean; layout: string } }
+	changeAudioChannel: {
+		options: UseSelectedOutput & { useSelectedAudioChannel: boolean; channel: string; audio_index: number }
+	}
+}
+
 export function UpdateActions(instance: TAGMCSInstance): void {
-	const actions: CompanionActionDefinitions = {
+	const actions: CompanionActionDefinitions<ActionsSchema> = {
 		selectOutput: {
 			name: 'Select Output',
 			description: 'Select an Output to use in other actions.',
@@ -180,6 +208,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					id: 'useSelectedLayout',
 					label: 'Use Selected Layout',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -187,13 +216,14 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Layout',
 					default: instance.layoutChoices[0]?.id || '',
 					choices: instance.layoutChoices,
-					isVisible: (opts) => opts['useSelectedLayout'] !== true,
+					isVisibleExpression: '!$(options:useSelectedLayout)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedTileNumber',
 					label: 'Use Selected Tile Number',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'textinput',
@@ -201,13 +231,14 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Tile Number',
 					default: '1',
 					useVariables: true,
-					isVisible: (opts) => opts['useSelectedTileNumber'] !== true,
+					isVisibleExpression: '!$(options:useSelectedTileNumber)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedVideoChannel',
 					label: 'Use Selected Video Channel',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -215,20 +246,22 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Video Channel',
 					default: instance.channelChoices[0]?.id || '',
 					choices: instance.channelChoices,
-					isVisible: (opts) => opts['useSelectedVideoChannel'] !== true,
+					isVisibleExpression: '!$(options:useSelectedVideoChannel)',
 				},
 				{
 					type: 'checkbox',
 					id: 'applytoOutput',
 					label: 'Apply Modified Layout to Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
-					isVisible: (opts) => opts['applytoOutput'] === true,
+					disableAutoExpression: true,
+					isVisibleExpression: '$(options:applytoOutput)',
 				},
 				{
 					type: 'dropdown',
@@ -236,7 +269,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['applytoOutput'] === true && opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '$(options:applytoOutput) && !$(options:useSelectedOutput)',
 				},
 			],
 			callback: async (evt) => {
@@ -273,6 +306,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -280,13 +314,14 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedDevice',
 					label: 'Use Selected Device',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -294,7 +329,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Device',
 					default: instance.deviceChoices[0]?.id || '',
 					choices: instance.deviceChoices,
-					isVisible: (opts) => opts['useSelectedDevice'] !== true,
+					isVisibleExpression: '!$(options:useSelectedDevice)',
 				},
 			],
 			callback: async (evt) => {
@@ -317,6 +352,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -324,7 +360,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 			],
 			callback: async (evt) => {
@@ -345,6 +381,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -352,13 +389,14 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedLayout',
 					label: 'Use Selected Layout',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -366,7 +404,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Layout',
 					default: instance.layoutChoices[0]?.id || '',
 					choices: instance.layoutChoices,
-					isVisible: (opts) => opts['useSelectedLayout'] !== true,
+					isVisibleExpression: '!$(options:useSelectedLayout)',
 				},
 			],
 			callback: async (evt) => {
@@ -387,6 +425,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -394,13 +433,14 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedAudioChannel',
 					label: 'Use Selected Audio Channel',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -408,7 +448,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					label: 'Audio Channel',
 					default: instance.channelChoices[0]?.id || '',
 					choices: instance.channelChoices,
-					isVisible: (opts) => opts['useSelectedAudioChannel'] !== true,
+					isVisibleExpression: '!$(options:useSelectedAudioChannel)',
 				},
 				{
 					type: 'number',
