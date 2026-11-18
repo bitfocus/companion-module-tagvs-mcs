@@ -1,12 +1,23 @@
 // File: src/feedbacks.ts
 import { TAGMCSInstance } from './main.js'
-import { CompanionFeedbackDefinitions, combineRgb } from '@companion-module/base'
+import { type CompanionFeedbackDefinitions, combineRgb } from '@companion-module/base'
 
 const COLOR_GREEN = combineRgb(0, 255, 0)
 const COLOR_WHITE = combineRgb(255, 255, 255)
 
+export type FeedbacksSchema = {
+	outputLayoutActive: {
+		type: 'boolean'
+		options: { useSelectedOutput: boolean; output: string; useSelectedLayout: boolean; layout: string }
+	}
+	outputOnDevice: {
+		type: 'boolean'
+		options: { useSelectedOutput: boolean; output: string; useSelectedDevice: boolean; device: string }
+	}
+}
+
 export function UpdateFeedbacks(instance: TAGMCSInstance): void {
-	const feedbacks: CompanionFeedbackDefinitions = {
+	const feedbacks: CompanionFeedbackDefinitions<FeedbacksSchema> = {
 		outputLayoutActive: {
 			type: 'boolean',
 			name: 'Layout is Active on Output',
@@ -17,6 +28,7 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -24,13 +36,14 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedLayout',
 					label: 'Use Selected Layout',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -38,7 +51,7 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					label: 'Layout',
 					default: instance.layoutChoices[0]?.id || '',
 					choices: instance.layoutChoices,
-					isVisible: (opts) => opts['useSelectedLayout'] !== true,
+					isVisibleExpression: '!$(options:useSelectedLayout)',
 				},
 			],
 			defaultStyle: {
@@ -73,6 +86,7 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					id: 'useSelectedOutput',
 					label: 'Use Selected Output',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -80,13 +94,14 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					label: 'Output',
 					default: instance.outputChoices[0]?.id || '',
 					choices: instance.outputChoices,
-					isVisible: (opts) => opts['useSelectedOutput'] !== true,
+					isVisibleExpression: '!$(options:useSelectedOutput)',
 				},
 				{
 					type: 'checkbox',
 					id: 'useSelectedDevice',
 					label: 'Use Selected Device',
 					default: false,
+					disableAutoExpression: true,
 				},
 				{
 					type: 'dropdown',
@@ -94,7 +109,7 @@ export function UpdateFeedbacks(instance: TAGMCSInstance): void {
 					label: 'Device',
 					default: instance.deviceChoices[0]?.id || '',
 					choices: instance.deviceChoices,
-					isVisible: (opts) => opts['useSelectedDevice'] !== true,
+					isVisibleExpression: '!$(options:useSelectedDevice)',
 				},
 			],
 			defaultStyle: {

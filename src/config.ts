@@ -1,6 +1,6 @@
 import { SomeCompanionConfigField } from '@companion-module/base'
 
-export interface ModuleConfig {
+export type ModuleConfig = {
 	ip: string
 	port: number
 	username: string
@@ -21,7 +21,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			label: 'MCS IP Address',
 			width: 6,
 			default: '',
-			required: true,
+			minLength: 1,
 		},
 		{
 			type: 'number',
@@ -31,7 +31,6 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			default: 443,
 			min: 1,
 			max: 65535,
-			required: true,
 		},
 		{
 			type: 'static-text',
@@ -46,7 +45,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			label: 'Username',
 			width: 6,
 			default: '',
-			required: true,
+			minLength: 1,
 		},
 		{
 			type: 'textinput',
@@ -54,7 +53,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			label: 'Password',
 			width: 6,
 			default: '',
-			required: true,
+			minLength: 1,
 		},
 		{
 			type: 'static-text',
@@ -108,7 +107,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			default: 800,
 			min: 500,
 			max: 2000,
-			isVisible: (opts) => opts['useQueuedCommands'] === true,
+			isVisibleExpression: '$(options:useQueuedCommands)',
 		},
 		{
 			type: 'static-text',
@@ -132,7 +131,6 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			default: 5000,
 			min: 500,
 			max: 3600000,
-			required: true,
 		},
 		{
 			type: 'checkbox',

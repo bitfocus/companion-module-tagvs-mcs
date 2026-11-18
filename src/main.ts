@@ -1,16 +1,26 @@
-import { InstanceBase, runEntrypoint, type SomeCompanionConfigField } from '@companion-module/base'
+import { InstanceBase, type CompanionVariableValues, type SomeCompanionConfigField } from '@companion-module/base'
 
 import { GetConfigFields, type ModuleConfig } from './config.js'
 import { UpgradeScripts } from './upgrades.js'
 
-import { UpdateActions } from './actions.js'
-import { UpdateFeedbacks } from './feedbacks.js'
+import { UpdateActions, type ActionsSchema } from './actions.js'
+import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks.js'
 import { UpdateVariableDefinitions, UpdateVariables } from './variables.js'
 
 import { InitConnection } from './api.js'
 import { StopPolling } from './polling.js'
 
-export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
+export type ModuleTypes = {
+	config: ModuleConfig
+	secrets: undefined
+	actions: ActionsSchema
+	feedbacks: FeedbacksSchema
+	variables: CompanionVariableValues // one set per output and layout, so not known ahead
+}
+
+export { UpgradeScripts }
+
+export class TAGMCSInstance extends InstanceBase<ModuleTypes> {
 	config!: ModuleConfig // Setup in init()
 
 	pollInterval: NodeJS.Timeout | undefined = undefined // Interval for polling data
@@ -93,4 +103,4 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	}
 }
 
-runEntrypoint(TAGMCSInstance, UpgradeScripts)
+export default TAGMCSInstance
