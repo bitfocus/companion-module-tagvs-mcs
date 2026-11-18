@@ -27,7 +27,7 @@ export class TAGMCSInstance extends InstanceBase<ModuleConfig> {
 	channelChoices: Array<{ id: string; label: string }> = []
 	deviceChoices: Array<{ id: string; label: string }> = []
 
-	layoutTileCounts: string = '' // Tile count per layout at the last poll, to know when tile variables change
+	tileVariables: string = '' // Layout variables setting and tile count per layout at the last poll, to know when tile variables change
 
 	selectedOutput: string = ''
 	selectedLayout: string = ''

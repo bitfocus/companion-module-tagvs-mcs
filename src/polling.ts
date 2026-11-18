@@ -58,10 +58,13 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 			await loadLayoutTiles(instance)
 		}
 
-		// a layout gaining or losing tiles changes which tile variables exist
-		const layoutTileCounts = JSON.stringify(instance.layouts.map((l) => [l.uuid, l.tiles?.length ?? null]))
-		const tileCountsChanged = layoutTileCounts !== instance.layoutTileCounts
-		instance.layoutTileCounts = layoutTileCounts
+		// turning layout variables on or off, or a layout gaining or losing tiles, changes which tile variables exist
+		const tileVariables = JSON.stringify([
+			instance.config.enableLayoutVariables,
+			instance.layouts.map((l) => [l.uuid, l.tiles?.length ?? null]),
+		])
+		const tileVariablesChanged = tileVariables !== instance.tileVariables
+		instance.tileVariables = tileVariables
 
 		//compare these choices to existing ones, and only rebuild if changed
 		const outputChoices = BuildOutputChoices(instance)
@@ -92,8 +95,8 @@ export async function getState(instance: TAGMCSInstance): Promise<void> {
 			instance.updateActions()
 			instance.updateVariableDefinitions()
 			instance.updateFeedbacks()
-		} else if (tileCountsChanged) {
-			instance.log('debug', 'Layout tiles changed; updating variables')
+		} else if (tileVariablesChanged) {
+			instance.log('debug', 'Tile variables changed; updating variables')
 			instance.updateVariableDefinitions()
 		}
 
