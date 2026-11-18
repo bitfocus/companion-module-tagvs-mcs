@@ -51,10 +51,14 @@ export function UpdateVariableDefinitions(instance: TAGMCSInstance): void {
 
 		if (instance.config.enableLayoutVariables == true) {
 			// Add variables for each tile in the layout (use .tiles.length if available, otherwise default to 16)
-			const tileCount = layout.tiles?.length || 16
+			const tileCount = definedTileCount(layout)
 			for (let i = 0; i < tileCount; i++) {
 				variables.push(
 					{ variableId: `layout_${layout.uuid}_tile_${i}_type`, name: `Layout: ${layout.label} Tile ${i} Type` },
+					{
+						variableId: `layout_${layout.uuid}_tile_${i}_number`,
+						name: `Layout: ${layout.label} Tile ${i} Tile Number`,
+					},
 					{
 						variableId: `layout_${layout.uuid}_tile_${i}_channel`,
 						name: `Layout: ${layout.label} Tile ${i} Channel UUID`,
@@ -85,25 +89,38 @@ export function UpdateVariables(instance: TAGMCSInstance): void {
 		vars[`output_${output.uuid}_device_label`] = getDeviceLabel(instance, output.device || '')
 
 		const layout = instance.layouts.find((l) => l.uuid === output.input.layouts?.[0])
-		if (layout) {
-			vars[`output_${output.uuid}_layout_label`] = layout.label
+		vars[`output_${output.uuid}_layout_label`] = layout ? layout.label : ''
+	}
 
-			// Also update tile info variables for this layout
-			const tileCount = layout.tiles?.length || 16
-			vars[`layout_${layout.uuid}_tile_count`] = tileCount
-			for (let i = 0; i < tileCount; i++) {
-				const tile = layout.tiles ? layout.tiles[i] : undefined
-				vars[`layout_${layout.uuid}_tile_${i}_type`] = tile?.type || ''
-				vars[`layout_${layout.uuid}_tile_${i}_channel`] = tile?.channel || ''
-				vars[`layout_${layout.uuid}_tile_${i}_channel_label`] = getChannelLabel(instance, tile?.channel || '')
-				vars[`layout_${layout.uuid}_tile_${i}_text`] = tile?.text || ''
-			}
-		} else {
-			vars[`output_${output.uuid}_layout_label`] = ''
+	// every layout, on an output or not, so its tiles can be followed and changed before it is applied
+	for (const layout of instance.layouts) {
+		const tileCount = definedTileCount(layout)
+		vars[`layout_${layout.uuid}_label`] = layout.label || ''
+		// blank until the MCS has listed the layout's tiles, rather than a guess
+		vars[`layout_${layout.uuid}_tile_count`] = Array.isArray(layout.tiles) ? layout.tiles.length : ''
+
+		// tile variables only exist when layout variables are enabled
+		if (instance.config.enableLayoutVariables != true) {
+			continue
+		}
+
+		for (let i = 0; i < tileCount; i++) {
+			const tile = layout.tiles ? layout.tiles[i] : undefined
+			vars[`layout_${layout.uuid}_tile_${i}_type`] = tile?.type || ''
+			// the Tile Number that Modify Layout takes, which need not be i + 1
+			vars[`layout_${layout.uuid}_tile_${i}_number`] = tile?.index ?? ''
+			vars[`layout_${layout.uuid}_tile_${i}_channel`] = tile?.channel || ''
+			vars[`layout_${layout.uuid}_tile_${i}_channel_label`] = getChannelLabel(instance, tile?.channel || '')
+			vars[`layout_${layout.uuid}_tile_${i}_text`] = tile?.text || ''
 		}
 	}
 
 	instance.setVariableValues(vars)
+}
+
+/** How many tile variables a layout gets: its tiles, or 16 while they are not known. */
+function definedTileCount(layout: LayoutConfig): number {
+	return Array.isArray(layout.tiles) ? layout.tiles.length : 16
 }
 
 function getChannelLabel(instance: TAGMCSInstance, channelUuid: string): string {

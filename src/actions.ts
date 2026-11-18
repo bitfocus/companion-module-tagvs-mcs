@@ -248,8 +248,7 @@ export function UpdateActions(instance: TAGMCSInstance): void {
 					? instance.selectedVideoChannel
 					: String(evt.options.videoChannel || '')
 				if (tileNumber < 1 || tileNumber > 64) {
-					instance.log('error', 'Modify Layout: Tile Number must be between 1 and 64')
-					return
+					throw new Error('Modify Layout: Tile Number must be between 1 and 64')
 				}
 
 				await modifyLayout(instance, layoutUuid, tileNumber, videoChannelUuid)
